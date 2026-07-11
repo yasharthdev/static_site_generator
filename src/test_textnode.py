@@ -30,8 +30,14 @@ class TestTextNode(unittest.TestCase):
     def test_repr(self):
         node = TextNode("This is the final one", TextType.IMAGE, "https://some_image.png")
         self.assertEqual(
-            "TextNode(This is the final one, image, https://some_image.png)",
+            "TextNode(This is the final one, TextType.IMAGE, https://some_image.png)",
             repr(node)
+        )
+
+    def test_repr_bold(self):
+        node = TextNode("This is some bold text", TextType.BOLD)
+        self.assertEqual(
+            repr(node), "TextNode(This is some bold text, TextType.BOLD)" 
         )
 
     # tests for the text_to_html function
