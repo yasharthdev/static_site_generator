@@ -1,3 +1,4 @@
+import re
 from textnode import TextNode, TextType
 
 def split_nodes_delimiter(
@@ -11,8 +12,8 @@ def split_nodes_delimiter(
             result.extend([node])
         else:
             split_list = node.text.split(delimiter)
-            # all odd indices will be code no matter how many instances of code
-            # the input textnode contains
+            # all odd indices will be either be code or bold or italic no matter how many
+            # instances of code or bold or italic the input textnode contains
             for index, value in enumerate(split_list):
                 if index % 2 == 0:
                     result.extend([TextNode(value, node.text_type)])
@@ -21,19 +22,10 @@ def split_nodes_delimiter(
             
     return result
 
-# node = TextNode("This is a text with a `code` block", TextType.TEXT)
-# old_nodes = [
-#     TextNode("This is ", TextType.TEXT),
-#     TextNode("already bold", TextType.BOLD),
-#     TextNode(" and this has `code` and more `code` in it", TextType.TEXT),
-# ]
-# more_nodes = [
-#             TextNode("This is", TextType.TEXT),
-#             TextNode("some already italic", TextType.ITALIC),
-#             TextNode("and **lots and lots** of **large** bold text", TextType.TEXT),
-#             TextNode("and some more code for fun", TextType.CODE)
-#         ]
-# print(split_nodes_delimiter(more_nodes, "**", TextType.BOLD))
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
  
