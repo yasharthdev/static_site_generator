@@ -1,7 +1,7 @@
 from extract_links_and_images import extract_markdown_images, extract_markdown_links
 from unittest import TestCase
 
-class TestExtractor(TestCase):
+class TestLinkAndImageExtractor(TestCase):
     # tests for images
     def test_normal_images(self):
         matches = extract_markdown_images(
