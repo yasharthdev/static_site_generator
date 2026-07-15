@@ -9,16 +9,16 @@ def split_nodes_delimiter(
         # if node.text_type is bold or italic or code, we're adding that as is
         # also if there's no delimiter present in the text, we also keep that as is
         if node.text_type != TextType.TEXT or delimiter not in node.text:
-            result.extend([node])
+            result.append(node)
         else:
             split_list = node.text.split(delimiter)
             # all odd indices will be either be code or bold or italic no matter how many
             # instances of code or bold or italic the input textnode contains
             for index, value in enumerate(split_list):
                 if index % 2 == 0:
-                    result.extend([TextNode(value, node.text_type)])
+                    result.append(TextNode(value, node.text_type))
                 else:
-                    result.extend([TextNode(value, text_type)])
+                    result.append(TextNode(value, text_type))
             
     return result
 
@@ -73,3 +73,13 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
 
 def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    old_nodes = [TextNode(text, TextType.TEXT)]
+    # for bold, italic, and code
+    split_bold = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
+    split_italic = split_nodes_delimiter(split_bold, "_", TextType.ITALIC)
+    split_code = split_nodes_delimiter(split_italic, "`", TextType.CODE)
+    # for links and images
+    final_split = split_nodes_link(split_nodes_image(split_code))
+    return final_split

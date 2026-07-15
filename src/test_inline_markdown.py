@@ -2,7 +2,7 @@ from inline_markdown import split_nodes_delimiter
 from inline_markdown import extract_markdown_images, extract_markdown_links
 from unittest import TestCase
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_image, split_nodes_link
+from inline_markdown import split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestInlineMarkdown(TestCase):
     # tests for the delimiterC
@@ -252,4 +252,26 @@ class TestInlineMarkdown(TestCase):
         self.assertListEqual(
             [TextNode("Here's a link ", TextType.TEXT), TextNode("link", TextType.LINK, "somelink.com"), TextNode(" and here's the same one again ", TextType.TEXT), TextNode("link", TextType.LINK, "somelink.com")],
             split_nodes_link([node])
+        )
+
+    # tests for text to TextNodes
+    def test_text_to_node_one(self):
+        text = "Sometimes you just need **strong emphasis** and _subtle styling_ to make your point, like you'll find in this [Markdown Guide](https://www.markdownguide.org)."
+        self.assertListEqual(
+            [TextNode("Sometimes you just need ", TextType.TEXT), TextNode("strong emphasis", TextType.BOLD), TextNode(" and ", TextType.TEXT), TextNode("subtle styling", TextType.ITALIC), TextNode(" to make your point, like you'll find in this ", TextType.TEXT), TextNode("Markdown Guide", TextType.LINK, "https://www.markdownguide.org"), TextNode(".", TextType.TEXT)],
+            text_to_textnodes(text)
+        )
+
+    def test_text_to_node_two(self):
+        text = "![Warning Icon](https://example.com/warning.png) The system encountered a **critical** error! Please run `sudo reboot` in your terminal immediately."
+        self.assertListEqual(
+            [TextNode("Warning Icon", TextType.IMAGE, "https://example.com/warning.png"), TextNode(" The system encountered a ", TextType.TEXT), TextNode("critical", TextType.BOLD), TextNode(" error! Please run ", TextType.TEXT), TextNode("sudo reboot", TextType.CODE), TextNode(" in your terminal immediately.", TextType.TEXT)],
+            text_to_textnodes(text)
+        )
+
+    def test_text_to_text_node_four(self):
+        text = "To parse this _correctly_, your function should use a `Regex` pattern that checks for **matching brackets**."
+        self.assertListEqual(
+            [TextNode("To parse this ", TextType.TEXT), TextNode("correctly", TextType.ITALIC), TextNode(", your function should use a ", TextType.TEXT), TextNode("Regex", TextType.CODE), TextNode(" pattern that checks for ", TextType.TEXT), TextNode("matching brackets", TextType.BOLD), TextNode(".", TextType.TEXT)],
+            text_to_textnodes(text)
         )
