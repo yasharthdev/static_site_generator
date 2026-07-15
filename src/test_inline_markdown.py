@@ -2,9 +2,10 @@ from inline_markdown import split_nodes_delimiter
 from inline_markdown import extract_markdown_images, extract_markdown_links
 from unittest import TestCase
 from textnode import TextNode, TextType
+from inline_markdown import split_nodes_image, split_nodes_link
 
 class TestInlineMarkdown(TestCase):
-    # tests for the delimiter
+    # tests for the delimiterC
     def test_delim_split_single_text_with_code_to_code(self):
         node = TextNode("This is a text with a `code` block", TextType.TEXT)
         self.assertEqual(
@@ -118,3 +119,137 @@ class TestInlineMarkdown(TestCase):
             "A link with weird URL formatting [wiki](https://en.wikipedia.org/wiki/File_(disambiguation))."
         )
         self.assertEqual(matches, [])
+
+    # tests for split_nodes_image
+    def test_split_nodes_no_images(self):
+        node = TextNode("Just plain text here", TextType.TEXT)
+        self.assertEqual(
+            [(TextNode("Just plain text here", TextType.TEXT))], split_nodes_image([node])
+        )
+
+    def test_split_nodes_bold_text_no_image(self):
+        node = TextNode("Some already bolded text", TextType.BOLD)
+        self.assertEqual(
+            [TextNode("Some already bolded text", TextType.BOLD)], split_nodes_image([node])
+        )
+
+    def test_split_nodes_single_image_no_surrounding_text(self):
+        node = TextNode("![some image](https://someimage.png)", TextType.TEXT)
+        self.assertListEqual(
+            [TextNode("some image", TextType.IMAGE, "https://someimage.png")],
+            split_nodes_image([node])
+        )
+
+    def test_split_nodes_starts_with_image(self):
+        node = TextNode(
+            "![cute cat](https://igmur.com/cute-cat-image) looks cute right?", TextType.TEXT
+        )
+        self.assertListEqual(
+            [TextNode("cute cat", TextType.IMAGE, "https://igmur.com/cute-cat-image"), TextNode(" looks cute right?", TextType.TEXT)],
+            split_nodes_image([node])
+        )
+
+    def test_split_nodes_ends_with_image(self):
+        node = TextNode(
+            "Looks cute right? ![cute cat](https://igmur.com/cute-cat-image)", TextType.TEXT
+        )
+        self.assertListEqual(
+            [TextNode("Looks cute right? ", TextType.TEXT), TextNode("cute cat", TextType.IMAGE, "https://igmur.com/cute-cat-image")],
+            split_nodes_image([node])
+        )
+
+    def test_split_nodes_mutliple_images(self):
+        node = TextNode(
+            "here's one ![image1](https://image1.com) here's another ![image2](https://image2.com) and here's the last one ![image3](https://image3.com)",
+            TextType.TEXT
+        )   
+        self.assertListEqual(
+            [TextNode("here's one ", TextType.TEXT), TextNode("image1", TextType.IMAGE, "https://image1.com"), TextNode(" here's another ", TextType.TEXT), TextNode("image2", TextType.IMAGE, "https://image2.com"), TextNode(" and here's the last one ", TextType.TEXT), TextNode("image3", TextType.IMAGE, "https://image3.com")],
+            split_nodes_image([node])
+        )
+
+    def test_split_nodes_multiple_mixed_image_nodes(self):
+        nodes = [
+            TextNode("An image ![image](igmur.com/image)", TextType.TEXT),
+            TextNode("some bolded text", TextType.BOLD),
+            TextNode("Some code", TextType.CODE),
+            TextNode("two images ![image1](igmur.com/image1) and ![image2](igmur.com/image2)", TextType.TEXT)
+        ]
+        self.assertListEqual(
+            [TextNode("An image ", TextType.TEXT), TextNode("image", TextType.IMAGE, "igmur.com/image"), TextNode("some bolded text", TextType.BOLD), TextNode("Some code", TextType.CODE), TextNode("two images ", TextType.TEXT), TextNode("image1", TextType.IMAGE, "igmur.com/image1"), TextNode(" and ", TextType.TEXT), TextNode("image2", TextType.IMAGE, "igmur.com/image2")],
+            split_nodes_image(nodes)
+        )
+
+    def test_split_nodes_duplicate_images(self):
+        node = TextNode("One image ![image](igmur.com/image) and the same one again ![image](igmur.com/image)", TextType.TEXT)
+        self.assertListEqual(
+            [TextNode("One image ", TextType.TEXT), TextNode("image", TextType.IMAGE, "igmur.com/image"), TextNode(" and the same one again ", TextType.TEXT), TextNode("image", TextType.IMAGE, "igmur.com/image")],
+            split_nodes_image([node])
+        ) 
+
+    # test for split_nodes_link
+    def test_split_nodes_no_links(self):
+        node = TextNode("Just plain text here", TextType.TEXT)
+        self.assertListEqual(
+            [(TextNode("Just plain text here", TextType.TEXT))], split_nodes_link([node])
+        )    
+
+    def test_split_nodes_bold_text_no_link(self):
+        node = TextNode("Some already bolded text", TextType.BOLD)
+        self.assertEqual(
+            [TextNode("Some already bolded text", TextType.BOLD)], split_nodes_link([node])
+        )
+
+    def test_split_nodes_single_link_no_surrounding_text(self):
+        node = TextNode("[some link](https://somelink.com)", TextType.TEXT)
+        self.assertListEqual(
+            [TextNode("some link", TextType.LINK, "https://somelink.com")],
+            split_nodes_link([node])
+        )
+    
+    def test_split_nodes_starts_with_link(self):
+        node = TextNode(
+            "[wikipedia](wikipedia.com) check for more information", TextType.TEXT
+        )
+        self.assertListEqual(
+            [TextNode("wikipedia", TextType.LINK, "wikipedia.com"), TextNode(" check for more information", TextType.TEXT)],
+            split_nodes_link([node])
+        )
+
+    def test_split_nodes_ends_with_link(self):
+        node = TextNode(
+            "For more info [click here](https://some-random-link.com)", TextType.TEXT
+        )
+        self.assertListEqual(
+            [TextNode("For more info ", TextType.TEXT), TextNode("click here", TextType.LINK, "https://some-random-link.com")],
+            split_nodes_link([node])
+        )
+
+    def test_split_nodes_mutliple_links(self):
+        node = TextNode(
+            "this is [link1](https://link1.com) and this is [link2](https://link2.com)",
+            TextType.TEXT
+        )   
+        self.assertListEqual(
+            [TextNode("this is ", TextType.TEXT), TextNode("link1", TextType.LINK, "https://link1.com"), TextNode(" and this is ", TextType.TEXT), TextNode("link2", TextType.LINK, "https://link2.com")],
+            split_nodes_link([node])
+        )
+
+    def test_split_nodes_mutiple_mixed_link_nodes(self):
+        nodes = [
+            TextNode("A link [link](somelink.com)", TextType.TEXT),
+            TextNode("some bolded text", TextType.BOLD),
+            TextNode("Some code", TextType.CODE),
+            TextNode("this is [link1](https://link1.com) and this is [link2](https://link2.com)", TextType.TEXT)
+        ]
+        self.assertListEqual(
+            [TextNode("A link ", TextType.TEXT), TextNode("link", TextType.LINK, "somelink.com"), TextNode("some bolded text", TextType.BOLD), TextNode("Some code", TextType.CODE), TextNode("this is ", TextType.TEXT), TextNode("link1", TextType.LINK, "https://link1.com"), TextNode(" and this is ", TextType.TEXT), TextNode("link2", TextType.LINK, "https://link2.com")],
+            split_nodes_link(nodes)
+        )
+
+    def test_split_nodes_duplicate_links(self):
+        node = TextNode("Here's a link [link](somelink.com) and here's the same one again [link](somelink.com)", TextType.TEXT)
+        self.assertListEqual(
+            [TextNode("Here's a link ", TextType.TEXT), TextNode("link", TextType.LINK, "somelink.com"), TextNode(" and here's the same one again ", TextType.TEXT), TextNode("link", TextType.LINK, "somelink.com")],
+            split_nodes_link([node])
+        )
