@@ -11,10 +11,14 @@ def split_nodes_delimiter(
         if node.text_type != TextType.TEXT or delimiter not in node.text:
             result.append(node)
         else:
-            split_list = node.text.split(delimiter)
+            split_list = node.text.split(delimiter) 
             # all odd indices will be either be code or bold or italic no matter how many
             # instances of code or bold or italic the input textnode contains
             for index, value in enumerate(split_list):
+                # this handles an important edge case, where we were getting empty elements
+                # inside the text nodes
+                if not split_list[index]:
+                    continue
                 if index % 2 == 0:
                     result.append(TextNode(value, node.text_type))
                 else:
