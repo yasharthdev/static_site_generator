@@ -1,11 +1,17 @@
-from textnode import TextType, TextNode
+from copystatic import copy_all_content
+
 def main():
-    node = TextNode(
-        "This is some anchor text",
-        TextType.IMAGE,
-        "https://www.google.com"
-    )
-    print(node)
+    copy_all_content("static", "public")
+
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+    
+
+
+
