@@ -95,7 +95,7 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_to_html_with_no_children(self):
         """check if error raised in case of no children"""
-        parent_node = ParentNode("div", [])
+        parent_node = ParentNode("div", None)
         with self.assertRaises(ValueError):
             parent_node.to_html()
     

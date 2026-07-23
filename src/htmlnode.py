@@ -17,7 +17,7 @@ class HTMLNode:
     
     def props_to_html(self) -> str:
         result = ""
-        if not self.props:
+        if self.props is None:
             return result
         for key, value in self.props.items():
             # HTML attributes must be separated by a space
@@ -38,9 +38,9 @@ class LeafNode(HTMLNode):
         super().__init__(tag, value, children=None, props=props)
 
     def to_html(self) -> str:
-        if not self.value:
+        if self.value is None:
             raise ValueError("All leaf nodes must have a value")
-        if not self.tag:
+        if self.tag is None:
             return self.value
         
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
@@ -53,15 +53,15 @@ class LeafNode(HTMLNode):
     
 class ParentNode(HTMLNode):
     def __init__(
-            self, tag: str, children: list[HTMLNode],
+            self, tag: str, children: list[HTMLNode] | None,
             props: dict[str, str] | None = None
     ) -> None:
         super().__init__(tag, None, children, props)
 
     def to_html(self):
-        if not self.tag:
+        if self.tag is None:
             raise ValueError("Parent node must contain a tag")
-        if not self.children:
+        if self.children is None:
             raise ValueError("Parent node must have children")
         result = ""
         for child in self.children:

@@ -23,7 +23,6 @@ def copy_tree(src_path: str, dest_path: str) -> None:
         # if the item is a file, copy it directly to the destination folder
         if os.path.isfile(item_path):
             shutil.copy(item_path, dest_path)
-            print(f"Copied: {item} from {src_path} to {dest_path}")
         else:
             # item is a folder, pass it to the func again
             # first you join the item with the dest
