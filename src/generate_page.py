@@ -26,5 +26,19 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     with open(dest_path, "w") as file:
         file.write(new_temp)
 
-
+def generate_pages_recursive(
+        dir_path_content: str, template_path: str, dest_dir_path: str
+) -> None:
+    content_items = os.listdir(dir_path_content) # ["content", "blog", "index.md"]
+    for item in content_items:
+        item_source_path = os.path.join(dir_path_content, item)
+        item_dest_path = os.path.join(dest_dir_path, item)
+        # splitting the file with ".", last element will be the extension (markdown here)
+        if os.path.isfile(item_source_path) and item.split(".")[-1] == "md":
+            # makes sure that the copied file is index.html instead of index.md
+            item_dest_path_html = item_dest_path.replace(".md", ".html")
+            generate_page(item_source_path, template_path, item_dest_path_html)
+        else:
+            os.mkdir(item_dest_path)
+            generate_pages_recursive(item_source_path, template_path, item_dest_path)
 
