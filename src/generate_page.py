@@ -13,7 +13,7 @@ def extract_title(markdown: str) -> str:
     return title
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(from_path: str, template_path: str, dest_path: str, basepath: str) -> None:
     print(f"Generating page {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r") as file:
         index_md = file.read()
@@ -23,11 +23,14 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     index_html = markdown_to_html_node(index_md).to_html()
     title = extract_title(index_md)
     new_temp = template_html.replace("{{ Title }}", title).replace("{{ Content }}", index_html)
+    replace_basepath = (
+        new_temp.replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
+    )
     with open(dest_path, "w") as file:
-        file.write(new_temp)
+        file.write(replace_basepath)
 
 def generate_pages_recursive(
-        dir_path_content: str, template_path: str, dest_dir_path: str
+        dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str
 ) -> None:
     content_items = os.listdir(dir_path_content) # ["content", "blog", "index.md"]
     for item in content_items:
@@ -37,8 +40,8 @@ def generate_pages_recursive(
         if os.path.isfile(item_source_path) and item.split(".")[-1] == "md":
             # makes sure that the copied file is index.html instead of index.md
             item_dest_path_html = item_dest_path.replace(".md", ".html")
-            generate_page(item_source_path, template_path, item_dest_path_html)
+            generate_page(item_source_path, template_path, item_dest_path_html, basepath)
         else:
             os.mkdir(item_dest_path)
-            generate_pages_recursive(item_source_path, template_path, item_dest_path)
+            generate_pages_recursive(item_source_path, template_path, item_dest_path, basepath)
 
